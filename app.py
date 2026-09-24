@@ -11,3 +11,5 @@ try:
     imagen.show()
 except FileNotFoundError:
     print(f"No se encontró la imagen en la ruta: {ruta_imagen}")
+
+print("Por si no jala")
