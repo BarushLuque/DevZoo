@@ -1,7 +1,7 @@
 from PIL import Image
 
 # Cambia 'tu_imagen.jpg' por la ruta de tu archivo de imagen
-ruta_imagen = 'imagen\a.png'
+ruta_imagen = "imagen/a.png"
 
 try:
     # Abrir la imagen
