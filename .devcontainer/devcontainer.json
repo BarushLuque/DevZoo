@@ -1,0 +1,16 @@
+{
+  "name": "zoo-dev",
+  // Reemplazamos "image" por "build" para que use tu Dockerfile real
+  "build": {
+    "dockerfile": "../Dockerfile"
+  },
+  
+  // Si necesitas que VS Code recuerde alguna extensión dentro del contenedor, la pones aquí:
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // Ej: "ms-azuretools.vscode-docker"
+      ]
+    }
+  }
+}

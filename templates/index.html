@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>WildLand Zoo - Tabla de Animales</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <style>
+    body {
+      background-color: #FFFDF5;
+      background-image: radial-gradient(#d1d5db 1.2px, transparent 1.2px);
+      background-size: 24px 24px;
+    }
+    .border-brutal { border: 3.5px solid #000000; }
+    .border-brutal-b { border-bottom: 3.5px solid #000000; }
+    .border-brutal-r { border-right: 3.5px solid #000000; }
+    .table-row-selected { background-color: #FEF08A !important; }
+  </style>
+</head>
+<body class="min-h-screen text-black font-sans antialiased p-4 md:p-8">
+
+  <nav class="max-w-6xl mx-auto mb-8 bg-white border-brutal shadow-md rounded-2xl px-6 py-4 flex items-center justify-between">
+    <div>
+      <span class="text-2xl font-black uppercase font-display">WildLand Zoo</span>
+      <span class="block text-xs font-bold uppercase tracking-wider text-black bg-emerald-200 px-2 py-0.5 rounded border border-black inline-block mt-0.5">Gestión de Reserva Natural</span>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto">
+    <header class="text-center mb-8">
+      <div class="inline-block bg-white border-brutal rounded-3xl px-8 py-5 mb-2">
+        <h1 class="text-3xl md:text-4xl font-black font-display text-gray-900">Bienvenido a WildLand Zoo</h1>
+        <h2 class="text-lg md:text-xl font-bold text-gray-700 mt-1">Tabla de animales</h2>
+      </div>
+    </header>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="mb-6 space-y-2">
+      {% for m in messages %}
+      <div class="bg-emerald-200 border-brutal rounded-2xl px-4 py-3 text-sm font-bold">{{ m }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="bg-white border-brutal rounded-2xl p-4 mb-6 flex items-center justify-between">
+      <input class="w-full max-w-xs px-3 py-2 text-sm font-bold bg-[#FAF9F6] border-2 border-black rounded-xl focus:ring-2 focus:ring-yellow-400" id="searchInput" placeholder="Buscar..." type="text">
+      <span class="bg-yellow-200 border-2 border-black px-3 py-1.5 rounded-lg text-xs font-bold">
+        Total: {{ animales|length }} animales
+      </span>
+    </div>
+
+    <section class="relative bg-white border-brutal rounded-3xl pb-12 mb-16">
+      <div class="overflow-x-auto rounded-t-[1.35rem]">
+        <table class="w-full text-left border-collapse" id="animal-table">
+          <thead>
+            <tr class="bg-amber-100 border-brutal-b text-black font-extrabold text-base">
+              <th class="py-4 px-6 border-brutal-r w-1/3" scope="col">Nombre</th>
+              <th class="py-4 px-6 border-brutal-r w-1/3" scope="col">Color</th>
+              <th class="py-4 px-6 w-1/3" scope="col">Especie</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y-2 divide-black text-sm md:text-base font-bold text-gray-800">
+            {% for animal in animales %}
+            <tr class="hover:bg-amber-50 cursor-pointer transition-colors duration-150" data-id="{{ animal.id }}">
+              <td class="py-4 px-6 border-brutal-r font-extrabold text-black">{{ animal.nombre }}</td>
+              <td class="py-4 px-6 border-brutal-r font-semibold">{{ animal.color }}</td>
+              <td class="py-4 px-6 italic text-gray-900 font-bold">{{ animal.especie }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="3" class="py-6 text-center text-gray-500">No hay animales registrados.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="absolute -bottom-7 left-0 right-0 z-10 px-8 flex items-center justify-between pointer-events-none">
+        <button id="btn-delete" class="pointer-events-auto w-14 h-14 bg-rose-300 hover:bg-rose-400 text-black border-brutal rounded-full font-black text-2xl flex items-center justify-center">-</button>
+        <button id="btn-edit" class="pointer-events-auto px-6 h-14 bg-yellow-300 hover:bg-yellow-400 text-black border-brutal rounded-full font-black text-lg uppercase">Editar</button>
+        <button id="btn-add" class="pointer-events-auto w-14 h-14 bg-emerald-300 hover:bg-emerald-400 text-black border-brutal rounded-full font-black text-2xl flex items-center justify-center">+</button>
+      </div>
+    </section>
+  </main>
+
+  <form id="delete-form" method="post" class="hidden"></form>
+
+  <div id="modal" class="hidden fixed inset-0 z-50 bg-black/50 items-center justify-center p-4">
+    <form id="animal-form" method="post" class="w-full max-w-md bg-white border-brutal rounded-3xl p-6">
+      <h3 id="modal-title" class="text-2xl font-black font-display mb-4">Agregar animal</h3>
+      <label class="block text-sm font-extrabold mb-1" for="f-nombre">Nombre</label>
+      <input id="f-nombre" name="nombre" type="text" required class="w-full mb-3 px-3 py-2 text-sm font-bold bg-[#FAF9F6] border-2 border-black rounded-xl focus:ring-2 focus:ring-yellow-400">
+      <label class="block text-sm font-extrabold mb-1" for="f-color">Color</label>
+      <input id="f-color" name="color" type="text" required class="w-full mb-3 px-3 py-2 text-sm font-bold bg-[#FAF9F6] border-2 border-black rounded-xl focus:ring-2 focus:ring-yellow-400">
+      <label class="block text-sm font-extrabold mb-1" for="f-especie">Especie</label>
+      <input id="f-especie" name="especie" type="text" required class="w-full mb-5 px-3 py-2 text-sm font-bold bg-[#FAF9F6] border-2 border-black rounded-xl focus:ring-2 focus:ring-yellow-400">
+      <div class="flex justify-end gap-3">
+        <button type="button" id="btn-cancel" class="px-5 py-2 bg-rose-300 hover:bg-rose-400 border-brutal rounded-full font-black uppercase">Cancelar</button>
+        <button type="submit" class="px-5 py-2 bg-emerald-300 hover:bg-emerald-400 border-brutal rounded-full font-black uppercase">Guardar</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const rows = document.querySelectorAll('#animal-table tbody tr');
+      const searchInput = document.getElementById('searchInput');
+
+      const modal = document.getElementById('modal');
+      const form = document.getElementById('animal-form');
+      const deleteForm = document.getElementById('delete-form');
+      let selected = null;
+
+      rows.forEach(row => {
+        row.addEventListener('click', () => {
+          rows.forEach(r => r.classList.remove('table-row-selected'));
+          row.classList.add('table-row-selected');
+          selected = row.dataset.id ? row : null;
+        });
+      });
+
+      function abrirModal(titulo, action, nombre, color, especie) {
+        document.getElementById('modal-title').textContent = titulo;
+        form.action = action;
+        document.getElementById('f-nombre').value = nombre;
+        document.getElementById('f-color').value = color;
+        document.getElementById('f-especie').value = especie;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.getElementById('f-nombre').focus();
+      }
+
+      function cerrarModal() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+
+      document.getElementById('btn-add').addEventListener('click', () => {
+        abrirModal('Agregar animal', '/agregar', '', '', '');
+      });
+
+      document.getElementById('btn-edit').addEventListener('click', () => {
+        if (!selected) { alert('Selecciona un animal de la tabla primero.'); return; }
+        const c = selected.querySelectorAll('td');
+        abrirModal('Editar animal', '/editar/' + selected.dataset.id,
+          c[0].textContent.trim(), c[1].textContent.trim(), c[2].textContent.trim());
+      });
+
+      document.getElementById('btn-delete').addEventListener('click', () => {
+        if (!selected) { alert('Selecciona un animal de la tabla primero.'); return; }
+        const nombre = selected.querySelector('td').textContent.trim();
+        if (confirm('¿Eliminar a ' + nombre + '?')) {
+          deleteForm.action = '/eliminar/' + selected.dataset.id;
+          deleteForm.submit();
+        }
+      });
+
+      document.getElementById('btn-cancel').addEventListener('click', cerrarModal);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrarModal(); });
+
+      searchInput.addEventListener('input', (e) => {
+        const val = e.target.value.toLowerCase();
+        rows.forEach(row => {
+          const text = row.innerText.toLowerCase();
+          row.style.display = text.includes(val) ? '' : 'none';
+        });
+      });
+    });
+  </script>
+</body>
+</html>
